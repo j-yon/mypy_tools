@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mypy_tools"
+version = "0.0.2"
+authors = [
+  { name="Jaden C. Yon", email="jyon7@gatech.edu" },
+]
+description = "A collection of tools for general use in my projects"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "matplotlib >= 3.7.1",
+    "numpy >= 1.22.0",
+]
+
+[tool.setuptools.packages.find]
+where = ['src']
+
+[tool.setuptools.package-data]
+mypy_tools = ['templates/*']

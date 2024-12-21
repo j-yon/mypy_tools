@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH --job-name=MOL_NAME                         # Job name
+#SBATCH --account=hive-cs207                    # Tracking account
+#SBATCH -N1 -n8                                # Number of nodes and cores required, respectively
+#SBATCH --mem=160G                       # Memory per core
+#SBATCH --time=SLURM_TIME                      # Duration of the job (Ex: 15 mins)
+#SBATCH -pSLURM_PARTITION                         # Queue name (where job is submitted)
+#SBATCH -o%x.out                         # Combined output and error messages file
+
+cd $SLURM_SUBMIT_DIR                            # Change to working directory
+
+if [ -f 'info.out' ]; then
+  rm info.out
+fi
+
+echo "Working directory: ${SLURM_SUBMIT_DIR}" >> info.out
+echo "Scratch space: ${TMPDIR}" >> info.out
+echo "Job Name: ${SLURM_JOB_NAME}" >> info.out
+echo "Job ID: ${SLURM_JOB_ID}" >> info.out
+echo "Start time: ${SLURM_JOB_START_TIME}" >> info.out
+
+module load anaconda3/2023.03
+conda activate dlpno_memtest			      # Load module dependencies
+eval `~/data/gits/psi4/PSI4_BUILD/stage/bin/psi4 --psiapi` # Make sure Psi4 executable is correct
+psi4 MOL_NAME.py --loglevel=10 -n 8 --scratch ${TMPDIR}

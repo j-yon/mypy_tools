@@ -9,13 +9,10 @@ class NumpyEncoder(json.JSONEncoder):
 
 nthreads = 8
 
-memory 200 gb
+memory JOB_MEM gb
 
 molecule MOL_NAME {
 MOL_DATA
-units angstrom
-no_com
-no_reorient
 }
 
 set {
@@ -26,10 +23,13 @@ set {
     cc_type df
     freeze_core True
     pno_convergence CONVERGENCE_TYPE
+    LOW_MEMORY_OVERLAP True
+    WRITE_QIA_PNO True
+    WRITE_QAB_PNO True
 }
 
 set_num_threads(nthreads)
-energy('dlpno-ccsd/BASIS_SET')
+energy('dlpno-ccsd(t)/BASIS_SET')
 
 with open("vars.json", "w") as f:
      json_dump = json.dumps(psi4.core.variables(), indent=4, cls=NumpyEncoder)
