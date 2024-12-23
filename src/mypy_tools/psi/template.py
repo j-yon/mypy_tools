@@ -17,7 +17,6 @@ def copy_psi_template(
     # Assumes that `system` is a psi-formatted geometry
     with open(f"{name}.py", 'r') as f:
         file_data = f.read()
-        file_data = file_data.replace("MOL_NAME", name)
         file_data = file_data.replace("MOL_DATA", system)
         file_data = file_data.replace("METHOD", method)
         file_data = file_data.replace("BASIS_SET", basis)

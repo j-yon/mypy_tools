@@ -11,7 +11,7 @@ nthreads = 8
 
 memory JOB_MEM gb
 
-molecule MOL_NAME {
+molecule mol {
     CHARGE 1
 MOL_DATA
     units angstrom
