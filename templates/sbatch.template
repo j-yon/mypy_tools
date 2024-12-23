@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=MOL_NAME                         # Job name
+#SBATCH --job-name=MY_JOB_NAME                         # Job name
 #SBATCH --account=hive-cs207                    # Tracking account
 #SBATCH -N1 -n8                                # Number of nodes and cores required, respectively
 #SBATCH --mem=160G                       # Memory per core

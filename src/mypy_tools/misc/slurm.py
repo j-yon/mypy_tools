@@ -1,34 +1,6 @@
-def copy_dlpno_template(
-    name: str,
-    system: str,
-    basis: str,
-    convergence: str,
-    memory: str,
-    template_path: str = None,
-) -> None:
-    import shutil
-
-    # copy template input file to current directory
-    shutil.copy(template_path, f'./{name}.py')
-
-    # replace the template data with the actual data
-    # assumes that `system` is a properly formatted psi input
-    with open(f"{name}.py", 'r') as f:
-        file_data = f.read()
-        file_data = file_data.replace("MOL_NAME", name)
-        file_data = file_data.replace("MOL_DATA", system)
-        file_data = file_data.replace("BASIS_SET", basis)
-        file_data = file_data.replace("CONVERGENCE_TYPE", convergence)
-        file_data = file_data.replace("JOB_MEM", memory)
-
-    # write the new file
-    with open(f"{name}.py", 'w') as f:
-        f.write(file_data)
-
-# Slurm specific
 def read_sacct(
     job_id: int,
-    save_file: str = None,
+    save_file: str = 'sacct.pkl',
     **kwargs,
 ) -> None:
     import subprocess
@@ -67,11 +39,14 @@ def read_sacct(
         df_to_be[k] = v
 
     df = pd.DataFrame(df_to_be, index=[0])
-    if save_file is not None:
-        # Must contain non-empty DF to concat
-        df = pd.concat(pd.read_pkl(save_file), pd.DataFrame(df_to_be))
 
-    df.to_pickle('sacct.pkl')
+    # Must contain non-empty DF to concat
+    try:
+        df = pd.concat([pd.read_pickle(save_file), pd.DataFrame(df_to_be, index=[0])])
+    except IOError:
+        pass
+
+    df.to_pickle(save_file)
 
 if __name__ == '__main__':
     pass

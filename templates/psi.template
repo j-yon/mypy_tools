@@ -12,7 +12,11 @@ nthreads = 8
 memory JOB_MEM gb
 
 molecule MOL_NAME {
+    CHARGE 1
 MOL_DATA
+    units angstrom
+    no_reorient
+    symmetry c1
 }
 
 set {
@@ -29,7 +33,7 @@ set {
 }
 
 set_num_threads(nthreads)
-energy('dlpno-ccsd(t)/BASIS_SET')
+energy('METHOD/BASIS_SET')
 
 with open("vars.json", "w") as f:
      json_dump = json.dumps(psi4.core.variables(), indent=4, cls=NumpyEncoder)
