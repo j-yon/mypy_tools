@@ -9,31 +9,21 @@ class NumpyEncoder(json.JSONEncoder):
 
 nthreads = 8
 
-memory JOB_MEM gb
+memory __memory
 
 molecule mol {
-    CHARGE 1
-MOL_DATA
-    units angstrom
-    no_reorient
-    symmetry c1
+0 1
+__xyz
+units angstrom
+no_reorient
+symmetry c1
 }
 
 set {
-    E_CONVERGENCE 8
-    D_CONVERGENCE 8
-    scf_type df
-    mp2_type df
-    cc_type df
-    freeze_core True
-    pno_convergence CONVERGENCE_TYPE
-    LOW_MEMORY_OVERLAP True
-    WRITE_QIA_PNO True
-    WRITE_QAB_PNO True
-}
+__psi_options}
 
 set_num_threads(nthreads)
-energy('METHOD/BASIS_SET')
+energy('__method/__basis')
 
 with open("vars.json", "w") as f:
      json_dump = json.dumps(psi4.core.variables(), indent=4, cls=NumpyEncoder)

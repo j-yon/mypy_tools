@@ -33,7 +33,7 @@ def convert_time(
         time_str = time_str.split('-')[1]
 
     time = datetime.strptime(time_str, '%H:%M:%S')
-    total_time = days * 86400 + time.hour * 3600 + time.minute * 60 + time.second
+    total_time = int(days) * 86400 + time.hour * 3600 + time.minute * 60 + time.second
 
     if unit == 'h':
         return total_time / 3600

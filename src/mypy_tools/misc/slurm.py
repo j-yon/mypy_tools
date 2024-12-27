@@ -42,7 +42,13 @@ def read_sacct(
 
     # Must contain non-empty DF to concat
     try:
-        df = pd.concat([pd.read_pickle(save_file), pd.DataFrame(df_to_be, index=[0])])
+        old_df = pd.read_pickle(save_file)
+        if job_id in old_df['JobID'].values:
+            print('Job ID already in DataFrame')
+            return
+
+        df = pd.concat([old_df, df])
+
     except IOError:
         pass
 
