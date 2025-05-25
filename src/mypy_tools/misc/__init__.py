@@ -1,1 +1,1 @@
-from . import massif, math, periodic_table, slurm
+from . import massif, math, slurm
