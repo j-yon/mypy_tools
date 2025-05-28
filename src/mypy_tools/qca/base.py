@@ -71,9 +71,3 @@ class BaseQCA(ABC):
         self, dataset: BaseDataset, verbose: Optional[bool] = False
     ) -> None:
         pass
-
-    @abstractmethod
-    def dataset_store(
-        self, dataset: BaseDataset, path: str, specs: Optional[str | list[str]]
-    ) -> None:
-        pass
