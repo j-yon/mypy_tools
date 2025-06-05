@@ -8,11 +8,31 @@ from typing import Optional
 class BaseQCA(ABC):
     def __init__(self, address: str, port: int, username: str, password: str):
         try:
-            self.client = PortalClient(
+            self.__client = PortalClient(
                 f"{address}:{port}", username=username, password=password
             )
         except Exception as e:
             raise ConnectionError(f"Couldn't connect to QCArchive server: {e}")
+
+        self.__computation_type = None
+
+    @property
+    def client(self) -> PortalClient:
+        return self.__client
+
+    @client.setter
+    def client(self, client: PortalClient) -> None:
+        self.__client = client
+
+    @property
+    def computation_type(self) -> str:
+        if self.__computation_type is None:
+            raise ValueError("Computation type is not set.")
+        return self.__computation_type
+
+    @computation_type.setter
+    def computation_type(self, value: str) -> None:
+        self.__computation_type = value
 
     @abstractmethod
     def record_add(
@@ -68,6 +88,9 @@ class BaseQCA(ABC):
 
     @abstractmethod
     def dataset_check(
-        self, dataset: BaseDataset, verbose: Optional[bool] = False
+        self,
+        dataset: BaseDataset,
+        specs: Optional[str | list[str]] = None,
+        verbose: Optional[bool] = False,
     ) -> None:
         pass

@@ -1,24 +1,21 @@
 import hashlib
-import qcelemental as qcel
+import json
+
 from qcelemental.models.molecule import Molecule
 from qcportal.singlepoint import QCSpecification
 from qcportal.manybody import (
-    ManybodyRecord,
     ManybodyDataset,
     ManybodySpecification,
     BSSECorrectionEnum,
 )
-from typing import Optional, Callable
+from typing import Optional
 from .base import BaseQCA
-
-h_2_kcalmol = qcel.constants.hartree2kcalmol
-bohr_2_angstroms = qcel.constants.bohr2angstroms
 
 
 class ManybodyQCA(BaseQCA):
     def __init__(self, address: str, port: int, username: str, password: str):
         super().__init__(address, port, username, password)
-        self.computation_type = "manybody"
+        self.__computation_type = "manybody"
 
     def record_add(
         self,
@@ -110,7 +107,7 @@ class ManybodyQCA(BaseQCA):
             **kwargs: Additional arguments to pass to the calculation.
 
         Returns:
-            Hash of the specification.
+            Name of the specification
         """
         spec = QCSpecification(
             program=program,
@@ -120,6 +117,7 @@ class ManybodyQCA(BaseQCA):
             keywords=kwargs,
         )
 
+        # assuming only dimer calculations for now
         manybody_spec = ManybodySpecification(
             program="qcmanybody",
             bsse_correction=[BSSECorrectionEnum.cp],
@@ -129,17 +127,21 @@ class ManybodyQCA(BaseQCA):
             },
         )
 
+        kwarg_str = json.dumps(kwargs, sort_keys=True)
         kwarg_hash = hashlib.md5(
-            str(kwargs).encode()
+            kwarg_str.encode()
         ).hexdigest()  # TODO: make work with nested kwargs
 
+        spec_name = f"{program}/{method}/{basis}/{kwarg_hash}"
+
         dataset.add_specification(
-            name=f"{program}/{method}/{basis}/{kwarg_hash}",
+            name=spec_name,
             specification=manybody_spec,
         )
 
-        return kwarg_hash
+        return spec_name
 
+    # kinda useless atm
     def dataset_submit(
         self,
         dataset: ManybodyDataset,
@@ -163,7 +165,7 @@ class ManybodyQCA(BaseQCA):
         dataset: ManybodyDataset,
         tag: str,
         specs: Optional[str | list[str]] = None,
-        hard_reset: bool = False,
+        hard_reset: Optional[bool] = False,
     ) -> None:
         """Rerun a dataset.
 
@@ -177,20 +179,21 @@ class ManybodyQCA(BaseQCA):
             None
         """
         if hard_reset:
-            del_recs = []
-            for _, _, rec in dataset.iterate_records(specification_names=specs):
-                if rec.status == "error" or rec.status == "cancelled":
-                    del_recs.append(rec.id)
-
-            self.client.delete_records(
-                del_recs, soft_delete=False
-            )  # will also delete child records
+            for _, _, rec in dataset.iterate_records(
+                status=["error", "cancelled"],
+                specification_names=specs,
+            ):
+                self.client.delete_records(
+                    rec.id, soft_delete=False
+                )  # will also delete child records
+            self.dataset_check(dataset, verbose=True)
             dataset.submit(tag=tag, specification_names=specs)
 
         else:
             dataset.set_tags([tag])
             dataset.reset_records(specification_names=specs)
 
+    # kinda useless atm
     def dataset_cancel(
         self, dataset: ManybodyDataset, specs: Optional[str | list[str]] = None
     ) -> None:
@@ -205,16 +208,22 @@ class ManybodyQCA(BaseQCA):
         """
         dataset.cancel_records(specification_names=specs)
 
-    def dataset_check(self, dataset: ManybodyDataset, verbose: bool = False) -> None:
+    def dataset_check(
+        self,
+        dataset: ManybodyDataset,
+        specs: Optional[str | list[str]] = None,
+        verbose: Optional[bool] = False,
+    ) -> None:
         """Check the status of a dataset.
 
         Args:
             dataset (ManybodyDataset): Dataset to check.
+            verbose (bool): Whether to print detailed record status.
 
         Returns:
             None
         """
         dataset.print_status()
         if verbose:
-            for _, _, rec in dataset.iterate_records():
+            for _, _, rec in dataset.iterate_records(specification_names=specs):
                 print(f"Record {rec.id}: {rec.status}")

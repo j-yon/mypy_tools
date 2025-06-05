@@ -1,24 +1,20 @@
-import qcelemental as qcel
+import hashlib
+import json
+
 from qcelemental.models.molecule import Molecule
 from qcportal.singlepoint import QCSpecification
 from qcportal.optimization import (
-    OptimizationRecord,
     OptimizationDataset,
     OptimizationSpecification,
 )
 from typing import Optional
 from .base import BaseQCA
 
-import hashlib
-
-h_2_kcalmol = qcel.constants.hartree2kcalmol
-bohr_2_angstroms = qcel.constants.bohr2angstroms
-
 
 class OptimizationQCA(BaseQCA):
     def __init__(self, address: str, port: int, username: str, password: str):
         super().__init__(address, port, username, password)
-        self.computation_type = "optimization"
+        self.__computation_type = "optimization"
 
     def record_add(
         self,
@@ -121,16 +117,19 @@ class OptimizationQCA(BaseQCA):
             qc_specification=spec,
         )
 
+        kwarg_str = json.dumps(kwargs, sort_keys=True)
         kwarg_hash = hashlib.md5(
-            str(kwargs).encode()
+            kwarg_str.encode()
         ).hexdigest()  # TODO: make work with nested kwargs
 
+        spec_name = f"{program}/{method}/{basis}/{kwarg_hash}"
+
         dataset.add_specification(
-            name=f"{program}/{method}/{basis}/{kwarg_hash}",
+            name=spec_name,
             specification=opt_spec,
         )
 
-        return kwarg_hash
+        return spec_name
 
     def dataset_submit(
         self,
@@ -169,12 +168,14 @@ class OptimizationQCA(BaseQCA):
             None
         """
         if hard_reset:
-            del_recs = []
-            for _, _, rec in dataset.iterate_records(specification_names=specs):
-                if rec.status == "ERROR":
-                    del_recs.append(rec.id)
-
-            self.client.delete_records(del_recs, soft_delete=False)
+            for _, _, rec in dataset.iterate_records(
+                status=["error", "cancelled"],
+                specification_names=specs,
+            ):
+                self.client.delete_records(
+                    rec.id, soft_delete=False
+                )  # will also delete child records
+            self.dataset_check(dataset, verbose=True)
             dataset.submit(tag=tag, specification_names=specs)
 
         else:
@@ -196,7 +197,10 @@ class OptimizationQCA(BaseQCA):
         dataset.cancel_records(specification_names=specs)
 
     def dataset_check(
-        self, dataset: OptimizationDataset, verbose: bool = False
+        self,
+        dataset: OptimizationDataset,
+        specs: Optional[str | list[str]] = None,
+        verbose: Optional[bool] = False,
     ) -> None:
         """Check the status of a dataset.
 
@@ -208,5 +212,5 @@ class OptimizationQCA(BaseQCA):
         """
         dataset.print_status()
         if verbose:
-            for _, _, rec in dataset.iterate_records():
+            for _, _, rec in dataset.iterate_records(specification_names=specs):
                 print(f"Record {rec.id}: {rec.status}")
