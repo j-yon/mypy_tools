@@ -8,6 +8,7 @@ from qcportal.manybody import (
     ManybodySpecification,
     BSSECorrectionEnum,
 )
+from qcportal.record_models import RecordStatusEnum
 from typing import Optional
 from .base import BaseQCA
 
@@ -15,7 +16,7 @@ from .base import BaseQCA
 class ManybodyQCA(BaseQCA):
     def __init__(self, address: str, port: int, username: str, password: str):
         super().__init__(address, port, username, password)
-        self.__computation_type = "manybody"
+        self.computation_type = "manybody"
 
     def record_add(
         self,
@@ -180,7 +181,7 @@ class ManybodyQCA(BaseQCA):
         """
         if hard_reset:
             for _, _, rec in dataset.iterate_records(
-                status=["error", "cancelled"],
+                status=[RecordStatusEnum.error, RecordStatusEnum.cancelled],
                 specification_names=specs,
             ):
                 self.client.delete_records(

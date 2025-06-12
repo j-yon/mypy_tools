@@ -14,7 +14,7 @@ from .base import BaseQCA
 class OptimizationQCA(BaseQCA):
     def __init__(self, address: str, port: int, username: str, password: str):
         super().__init__(address, port, username, password)
-        self.__computation_type = "optimization"
+        self.computation_type = "optimization"
 
     def record_add(
         self,

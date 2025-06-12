@@ -10,7 +10,7 @@ from .base import BaseQCA
 class SinglepointQCA(BaseQCA):
     def __init__(self, address: str, port: int, username: str, password: str):
         super().__init__(address, port, username, password)
-        self.__computation_type = "singlepoint"
+        self.computation_type = "singlepoint"
 
     def record_add(
         self,
