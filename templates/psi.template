@@ -1,14 +1,3 @@
-import json
-import numpy as np
-
-class NumpyEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        return json.JSONEncoder.default(self, obj)
-
-nthreads = 8
-
 memory __memory
 
 molecule mol {
@@ -20,11 +9,8 @@ symmetry c1
 }
 
 set {
-__psi_options}
+__psi_options
+}
 
-set_num_threads(nthreads)
+set_num_threads(__nthreads)
 energy('__method/__basis')
-
-with open("vars.json", "w") as f:
-     json_dump = json.dumps(psi4.core.variables(), indent=4, cls=NumpyEncoder)
-     f.write(json_dump)
