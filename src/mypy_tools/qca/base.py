@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
+
 from qcelemental.models.molecule import Molecule
 from qcportal import PortalClient
 from qcportal.dataset_models import BaseDataset
-from typing import Optional
 
 
 class BaseQCA(ABC):
+    """Base class for QCArchive clients."""
+
     def __init__(self, address: str, port: int, username: str, password: str):
         try:
             self.__client = PortalClient(
@@ -44,10 +46,36 @@ class BaseQCA(ABC):
         tag: str,
         **kwargs,
     ) -> list[int]:
+        """Add a new record to the queue.
+
+        Args:
+            mols (Molecule | list[Molecule]): Molecule or list of molecules to add.
+            program (str): Program to use for the calculation.
+            method (str): Method to use for the calculation.
+            basis (str): Basis set to use for the calculation.
+            tag (str): Tag to use for the calculation.
+            **kwargs: Additional arguments to pass to the calculation.
+
+        Returns:
+            list[int]: List of record IDs added.
+        """
         pass
 
     @abstractmethod
-    def dataset_add(self, mols: Molecule | list[Molecule], name: str) -> BaseDataset:
+    def dataset_add(
+        self,
+        name: str,
+        mols: Molecule | list[Molecule],
+    ) -> BaseDataset:
+        """Add a new dataset with Molecule entries to the client.
+
+        Args:
+            name (str): Name of the dataset.
+            mols (Molecule | list[Molecule]): Molecule or list of molecules to add.
+
+        Returns:
+            BaseDataset: The created dataset.
+        """
         pass
 
     @abstractmethod
@@ -59,38 +87,16 @@ class BaseQCA(ABC):
         basis: str,
         **kwargs,
     ) -> str:
-        pass
+        """Add a specification to the given dataset.
 
-    @abstractmethod
-    def dataset_submit(
-        self,
-        dataset: BaseDataset,
-        tag: str,
-        specs: Optional[str | list[str]] = None,
-    ) -> None:
-        pass
+        Args:
+            dataset (BaseDataset): Dataset to add the specification to.
+            program (str): Program to use for the calculation.
+            method (str): Method to use for the calculation.
+            basis (str): Basis set to use for the calculation.
+            **kwargs: Additional arguments to pass as keywords.
 
-    @abstractmethod
-    def dataset_reset(
-        self,
-        dataset: BaseDataset,
-        tag: str,
-        specs: Optional[str | list[str]] = None,
-        hard_reset: Optional[bool] = False,
-    ) -> None:
-        pass
-
-    @abstractmethod
-    def dataset_cancel(
-        self, dataset: BaseDataset, specs: Optional[str | list[str]]
-    ) -> None:
-        pass
-
-    @abstractmethod
-    def dataset_check(
-        self,
-        dataset: BaseDataset,
-        specs: Optional[str | list[str]] = None,
-        verbose: Optional[bool] = False,
-    ) -> None:
+        Returns:
+            str: Name of the specification.
+        """
         pass
